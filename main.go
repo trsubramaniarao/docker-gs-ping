@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
 	"os"
 
@@ -15,12 +16,33 @@ func main() {
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
 
+	getHostName := func() string {
+		h, _ := os.Hostname()
+		return h
+	}
+
 	e.GET("/", func(c echo.Context) error {
-		return c.HTML(http.StatusOK, "Hello, Docker! <3")
+		return c.HTML(http.StatusOK, fmt.Sprintf("host: %v", getHostName()))
 	})
 
 	e.GET("/ping", func(c echo.Context) error {
-		return c.JSON(http.StatusOK, struct{ Status string }{Status: "OK"})
+		return c.JSON(http.StatusOK, struct{ Status string }{Status: fmt.Sprintf("OK: %v", getHostName())})
+	})
+
+	e.POST("/upload", func(c echo.Context) error {
+		return c.JSON(http.StatusCreated, struct {
+			Status string
+		}{
+			Status: fmt.Sprintf("Upload: %v", getHostName()),
+		})
+	})
+
+	e.POST("/huge", func(c echo.Context) error {
+		return c.JSON(http.StatusCreated, struct {
+			Status string
+		}{
+			Status: fmt.Sprintf("Huge Upload: %v", getHostName()),
+		})
 	})
 
 	httpPort := os.Getenv("HTTP_PORT")
